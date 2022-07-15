@@ -3,6 +3,8 @@
    [re-frame.core :as re-frame]
    [pick-things-up.db :as db]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [vimsical.re-frame.cofx.inject :as inject]
+   [pick-things-up.subs :as subs]
    ))
 
 (re-frame/reg-event-db
@@ -37,8 +39,9 @@
 
 (re-frame/reg-event-fx
  ::generate-solar-power
- (fn [{:keys [db]} event]
-   {:db db}))
+ [(re-frame/inject-cofx ::inject/sub [::subs/power-generated])]
+ (fn [{db :db power-generated ::subs/power-generated } event]
+   {:db (update db :total-power-generated (partial + power-generated))}))
 
 (re-frame/reg-event-fx
  ::update-game-state

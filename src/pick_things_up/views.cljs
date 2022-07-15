@@ -36,8 +36,9 @@
     [:p @cloud-count]))
 
 (defn power-meter []
-  (let [maxMw 500
-        power-generated (re-frame/subscribe [::subs/power-generated])]
+  (let [maxMw 50
+        power-generated (re-frame/subscribe [::subs/power-generated])
+        total-power-generated (re-frame/subscribe [::subs/total-power-generated])]
     (fn []
       (let [hand-angle (-> @power-generated
                            (/ maxMw)
@@ -46,21 +47,25 @@
             hand-endpoint [(* 85 (js/Math.cos hand-angle))
                            (* 85 (js/Math.sin hand-angle))]]
         [:div
-         [:svg
-          {:style {:width 200
-                   :height 200}
-           :view-box "-100 -100 200 200"}
-          [:circle {:r 90
-                    :style {:fill "white"
-                            :stroke "black"
-                            :stroke-width 3}}]
-          [:path {:stroke "black"
-                  :d (str "M 0 0 L " (clojure.string/join " " hand-endpoint))}]]]))))
+         [:div
+          [:svg
+           {:style {:width 200
+                    :height 200}
+            :view-box "-100 -100 200 200"}
+           [:circle {:r 90
+                     :style {:fill "white"
+                             :stroke "black"
+                             :stroke-width 3}}]
+           [:path {:stroke "black"
+                   :d (str "M 0 0 L " (clojure.string/join " " hand-endpoint))}]]]
+         [:div
+          [:p (str "Power Output:" @power-generated)]]
+         [:div
+          [:p (str "Total Power Generated:" @total-power-generated)]]]))))
 
 (defn main-panel []
   [re-com/v-box
    :src      (at)
    :height   "100%"
    :children [[clouds]
-              #_[power-generated]
               [power-meter]]])

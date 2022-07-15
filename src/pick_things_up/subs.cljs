@@ -29,6 +29,9 @@
  ::power-generated
  :<- [::cloud-count]
  (fn [cloud-count]
-   (* (- 50 cloud-count)
-      10))
- )
+   (- 50 cloud-count)))
+
+(re-frame/reg-sub
+ ::total-power-generated
+ (fn [db]
+   (:total-power-generated db)))
