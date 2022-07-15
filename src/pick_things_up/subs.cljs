@@ -20,7 +20,15 @@
    ))
 
 (re-frame/reg-sub
- ::neighbors
+ ::cloud-count
  :<- [::clouds]
- (fn [clouds [_ cloudId]]
-   (subvec clouds (dec cloudId) (+ cloudId 2))))
+ (fn [clouds]
+   (count (filter identity clouds))))
+
+(re-frame/reg-sub
+ ::power-generated
+ :<- [::cloud-count]
+ (fn [cloud-count]
+   (* (- 50 cloud-count)
+      10))
+ )

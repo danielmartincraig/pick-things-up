@@ -3,4 +3,4 @@
 (def default-db
   {:name "re-frame"
    :clouds (apply vector (take 50 (repeat false)))
-   })
+   :power-generated 100})

@@ -10,9 +10,40 @@
  (fn-traced [_ _]
             db/default-db))
 
-(re-frame/reg-event-db
+(defn dispatch-timer-event
+  []
+  (re-frame/dispatch [::update-game-state]))
+
+(defonce do-timer (js/setInterval dispatch-timer-event 200))
+
+(re-frame/reg-event-fx
  ::toggle-cloud
- [(re-frame/path [:clouds])]
- (fn-traced [clouds [_ cloud-id]]
-            (update clouds cloud-id not)
-            ))
+ (fn [{:keys [db]} [_ cloudId]]
+   (let [clouds (:clouds db)
+         left (if (<= cloudId 0) 0 (dec cloudId))
+         right (if (>= cloudId 49) 49 (inc cloudId))
+         neighbors (subvec clouds left (inc right))
+         cloudy-neighbors (filter identity neighbors)
+         cloudy? (> (count (filter identity neighbors)) 1)]
+     {:db (if cloudy? (update-in db [:clouds cloudId] not) db)
+      :fx (if cloudy? [[:dispatch [::toggle-cloud left]]
+                       [:dispatch [::toggle-cloud right]]] [])})))
+
+(re-frame/reg-event-fx
+ ::force-toggle-random-cloud
+ (fn [{:keys [db]} event]
+   (let [cloudId (rand-int 50)]
+     {:db (update-in db [:clouds cloudId] not)})))
+
+(re-frame/reg-event-fx
+ ::generate-solar-power
+ (fn [{:keys [db]} event]
+   {:db db}))
+
+(re-frame/reg-event-fx
+ ::update-game-state
+ (fn [{:keys [db]} event]
+   (let [cloudId (rand-int 50)]
+     {:fx [[:dispatch [::force-toggle-random-cloud]]
+           [:dispatch [::generate-solar-power]]]}
+     )))
